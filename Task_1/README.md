@@ -1,3 +1,3 @@
 In this project, Gaussian Process was implemented to predict the polution level of certain locations in order to help a city predict and audit the concentration of fine particulate matter (PM2.5) per cubic meter of air. The data prerecorded by mobile measurement stations are given. The goal is now to develop a pollution model that can predict the air pollution concentration in locations without measurements. This model will then be used to determine particularly polluted areas where permanent measurement stations should be deployed.
 
-In the task, Gaussian Process regression is used in order to model air pollution and try to predict the concentration of PM2.5 at previously unmeasured locations.
+In the task, Gaussian Process regression is used in order to model air pollution and try to predict the concentration of PM2.5 at previously "unmeasured" locations. The result is compared to the given ground truth values.
