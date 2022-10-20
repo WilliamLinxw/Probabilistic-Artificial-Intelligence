@@ -62,8 +62,8 @@ class Model(object):
         """
 
         # TODO: Fit your model here
-        kernel = RationalQuadratic()
-        X_train, X_test, y_train, y_test = train_test_split(train_features, train_GT, test_size=0.21, random_state=0)
+        kernel = Matern(nu=1.5, length_scale=15.0, length_scale_bounds='fixed')
+        X_train, X_test, y_train, y_test = train_test_split(train_features, train_GT, test_size=0.01, random_state=0)
         gpr = GaussianProcessRegressor(kernel=kernel, random_state=0).fit(X_train, y_train)
         self.model = gpr
 
