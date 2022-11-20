@@ -18,14 +18,15 @@ class BO_algo():
         """Initializes the algorithm with a parameter configuration. """
 
         # TODO: enter your code here
-        self.accuracy_GP = GaussianProcessRegressor(kernel=0.5*Matern(length_scale=0.5, nu=2.5), random_state=0,
+        self.accuracy_GP = GaussianProcessRegressor(kernel=0.5*Matern(length_scale=0.5, nu=2.5, 
+                                                            length_scale_bounds=((1e-100, 1e100))),
+                                                        random_state=0,
                                                         alpha=1e-5)
-        self.speed_GP = GaussianProcessRegressor(kernel=ConstantKernel(constant_value=1.5)+
-                                                    np.sqrt(2)*Matern(length_scale=0.5, nu=2.5), random_state=0,
+        self.speed_GP = GaussianProcessRegressor(kernel=ConstantKernel(constant_value=1.5, constant_value_bounds=((1e-100, 1e100)))+
+                                                    np.sqrt(2)*Matern(length_scale=0.5, nu=2.5, length_scale_bounds=((1e-100, 1e50))),
+                                                    random_state=0,
                                                     alpha=1e-5)
         self.points_explored = []
-
-
 
     def next_recommendation(self):
         """
