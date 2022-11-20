@@ -1,12 +1,14 @@
 import numpy as np
 from scipy.optimize import fmin_l_bfgs_b
+from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
 
 domain = np.array([[0, 5]])
 SAFETY_THRESHOLD = 1.2
 NOISE = 1e-4
-SEED = 0
+SEED = 6
+np.random.seed(SEED)
 
 """ Solution """
 
@@ -16,9 +18,11 @@ class BO_algo():
         """Initializes the algorithm with a parameter configuration. """
 
         # TODO: enter your code here
-        self.accuracy_GP = GaussianProcessRegressor(kernel=0.5*Matern(length_scale=0.5, nu=2.5), random_state=0)
-        self.speed_GP = GaussianProcessRegressor(kernel=ConstantKernel(constant_value=1.5)+np.sqrt(2)*
-                                                        Matern(length_scale=0.5, nu=2.5), random_state=0)
+        self.accuracy_GP = GaussianProcessRegressor(kernel=0.5*Matern(length_scale=0.5, nu=2.5), random_state=0,
+                                                        alpha=1e-5)
+        self.speed_GP = GaussianProcessRegressor(kernel=ConstantKernel(constant_value=1.5)+
+                                                    np.sqrt(2)*Matern(length_scale=0.5, nu=2.5), random_state=0,
+                                                    alpha=1e-5)
         self.points_explored = []
 
 
@@ -88,16 +92,25 @@ class BO_algo():
 
         # TODO: enter your code here
         # Get the input's probability
-        c_mean, c_std = self.speed_GP.predict(X=[x], return_std=True)
-        a_mean, a_std = self.accuracy_GP.predict(X=[x], return_std=True)
+        s_mean, s_std = self.speed_GP.predict(X=x.reshape(1,-1), return_std=True)
+        a_mean, a_std = self.accuracy_GP.predict(X=x.reshape(1,-1), return_std=True)
         # print(c_mean, c_std)
         # print(a_mean, a_std)
 
-        c_mean, c_std = c_mean[0], c_std[0]
+        s_mean, s_std = s_mean[0], s_std[0]
         a_mean, a_std = a_mean[0], a_std[0]
 
-        ucb =(a_mean + 2*a_std) - 1e10*(c_mean<SAFETY_THRESHOLD)
+        ucb = (a_mean + 3*a_std) - 1e10*(s_mean+2*s_std<SAFETY_THRESHOLD)
         return ucb
+        # points = np.array(self.points_explored)
+        # if len(points) != 0:
+        #     best_so_far = np.max(points[:,1])
+        # z = (a_mean - best_so_far)/a_std
+        # ei = (a_mean - best_so_far)*norm.cdf(z) + a_std*norm.pdf(z)
+        # probability_feasible = 1 - norm.cdf(1.2, loc=s_mean, scale=s_std)
+        # weighted_ei = ei*probability_feasible
+        # return weighted_ei
+
 
 
     def add_data_point(self, x, f, v):
@@ -119,7 +132,13 @@ class BO_algo():
             x = np.array([[x[0]]])
         self.points_explored.append([float(x[:,0]), float(f), float(v)])
         # print((np.array(self.points_explored)[:,0], np.array(self.points_explored)[:,1]))
+        # print("------Accuracy FIT------")
+        # print('x shape: ', np.array(self.points_explored)[:,0].reshape(-1,1).shape)
+        # print('f shape: ', np.array(self.points_explored)[:,1].shape)
         self.accuracy_GP.fit(np.array(self.points_explored)[:,0].reshape(-1,1), np.array(self.points_explored)[:,1])
+        # print("-------SPEED FIT--------")
+        # print('x shape: ', np.array(self.points_explored)[:,0].reshape(-1,1).shape)
+        # print('v shape: ', np.array(self.points_explored)[:,2].shape)
         self.speed_GP.fit(np.array(self.points_explored)[:,0].reshape(-1,1), np.array(self.points_explored)[:,2])
 
     def get_solution(self):
@@ -137,7 +156,8 @@ class BO_algo():
         feasible_index = np.where(total_points[:,2]>SAFETY_THRESHOLD+3*NOISE)[0]
         # print(feasible_index)
         if len(feasible_index) == 0:
-            return np.array([[0]])
+            print('Non-feasible!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            return np.array([0])
         points_feasible = total_points[feasible_index, :]
         max_x = points_feasible[np.argmax(points_feasible[:,1])][0]
         return max_x
