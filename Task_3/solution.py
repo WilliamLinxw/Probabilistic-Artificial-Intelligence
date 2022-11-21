@@ -19,13 +19,11 @@ class BO_algo():
 
         # TODO: enter your code here
         self.accuracy_GP = GaussianProcessRegressor(kernel=0.5*Matern(length_scale=0.5, nu=2.5, 
-                                                            length_scale_bounds=((1e-100, 1e100))),
-                                                        random_state=0,
-                                                        alpha=1e-5)
-        self.speed_GP = GaussianProcessRegressor(kernel=ConstantKernel(constant_value=1.5, constant_value_bounds=((1e-100, 1e100)))+
-                                                    np.sqrt(2)*Matern(length_scale=0.5, nu=2.5, length_scale_bounds=((1e-100, 1e50))),
-                                                    random_state=0,
-                                                    alpha=1e-5)
+                                                            length_scale_bounds='fixed'),
+                                                        random_state=0, alpha=1e-4)
+        self.speed_GP = GaussianProcessRegressor(kernel=ConstantKernel(constant_value=1.5, constant_value_bounds='fixed')+
+                                                    np.sqrt(2)*Matern(length_scale=0.5, nu=2.5, length_scale_bounds='fixed'),
+                                                    random_state=0, alpha=1e-4)
         self.points_explored = []
 
     def next_recommendation(self):
@@ -101,7 +99,7 @@ class BO_algo():
         s_mean, s_std = s_mean[0], s_std[0]
         a_mean, a_std = a_mean[0], a_std[0]
 
-        ucb = (a_mean + 3*a_std) - 1e10*(s_mean+2*s_std<SAFETY_THRESHOLD)
+        ucb = (a_mean + 2*a_std) - 1e10*(s_mean+0.5*s_std<SAFETY_THRESHOLD)
         return ucb
         # points = np.array(self.points_explored)
         # if len(points) != 0:
