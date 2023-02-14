@@ -1,5 +1,5 @@
 # Probabilistic-Artificial-Intelligence
-Project codes for Probabilistic Artificial Intelligence course at ETH Zurich
+Project codes for Probabilistic Artificial Intelligence.
 
 ## Task 1
 In this project, Gaussian Process Regressor was used to predict the pollution level at locations where no monitors were placed. To overcome the large data training challenge, the data set was downsampled and the Quadratic Rational Kernel was used to perform training. The second approace was to use the Matern Kernel with nu=1.5 and a fixed lengthscale=15, with which the whole training set can be utilized, resulting in a better outcome. The result was obtained using 99% of the training set. Random Fourier Transform was also tried to tackle the large-scale training challenge but it didn't work well.
